@@ -22,7 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "liveMedia.hh"
 #include "BasicUsageEnvironment.hh"
-///////////////Scoly-0314
+/////////////// Here is modified by mosquito
 #include "SDL/SDL.h"
 #include "SDL/SDL_thread.h"
 #include <map>
@@ -85,7 +85,7 @@ SDL_Overlay     *bmp = NULL;
 struct SwsContext *sws_ctx = NULL;
 SDL_Rect rect;
 SDL_Event       event;
-/////////////////Scoly-0313
+/////////////////////// here is modified by mosquito
 static int video_sess_fmt = -1;
 static int audio_sess_fmt = -1;
 static const char *video_codec_name = NULL;
@@ -133,7 +133,7 @@ struct RTSPThreadParam {
     int videostate;
 };
 #endif
-//////////////////Scoly-0314
+////////////////// Here is modified by mosquito
 FILE *fp_log;
 static map<unsigned short,int> port2channel;
 static AVCodecContext *vdecoder[VIDEO_SOURCE_CHANNEL_MAX];
@@ -412,7 +412,7 @@ play_video_priv(int ch/*channel*/, unsigned char *buffer, int bufsize, struct ti
         gettimeofday(&ptv0, NULL);
 #endif
         if((len = avcodec_decode_video2(vdecoder[ch], vframe[ch], &got_picture, &avpkt)) < 0) {
-           // fprintf(fp_log,"decode video frame %d error\n", frame);
+            //fprintf(fp_log,"decode video frame %d error\n", frame);
             break;
         }
         if(got_picture) {
@@ -681,7 +681,7 @@ vdecoder[channel] = ctx;
     return 0;
 }
 
-//////////////////////////Scoly-0314
+////////////////////////// Here is modified by mosquito
 #define PRIVATE_BUFFER_SIZE     1048576
 
 struct decoder_buffer {
@@ -839,14 +839,14 @@ if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         return -1; 
     }   
  
-///////////////////////Scoly-0314
+/////////////////////// Here is modified by mosquito
 //savefp_yuv = fopen("savefile.yuv","wb+");
   port2channel.clear();
  //////////////////////////
 
     if(init_decoder_buffer() < 0) {
         fprintf(fp_log,"init decode buffer failed.\n");
-        return NULL;
+        return -1;
     }
 
   // There are argc-1 URLs: argv[1] through argv[argc-1].  Open and start streaming each one:
@@ -858,7 +858,7 @@ if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
   env->taskScheduler().doEventLoop(&eventLoopWatchVariable);
     // This function call does not return, unless, at some point in time, "eventLoopWatchVariable" gets set to something non-zero.
   
-/////////////Scoly-0314
+///////////// Here is modified by mosquito
   fclose(fp_log);
   fclose(savefp_yuv);
 /////////////////////
@@ -1018,7 +1018,7 @@ void setupNextSubsession(RTSPClient* rtspClient) {
       env << *rtspClient << "Failed to initiate the \"" << *scs.subsession << "\" subsession: " << env.getResultMsg() << "\n";
       setupNextSubsession(rtspClient); // give up on this subsession; go to the next one
     } else {
-/////////////////////Scoly-0314
+///////////////////// Here is modified by mosquito
 	char vparam[1024];
       	const char *pvparam = NULL;
         video_sess_fmt = scs.subsession->rtpPayloadFormat();
