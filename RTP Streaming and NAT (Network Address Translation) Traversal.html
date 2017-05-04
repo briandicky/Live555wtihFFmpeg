@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>
+        RTP Streaming and NAT (Network Address Translation) Traversal - HackMD
+    </title>
+    <link rel="icon" type="image/png" href="http://140.114.89.208:3000/favicon.png">
+    <link rel="apple-touch-icon" href="http://140.114.89.208:3000/apple-touch-icon.png">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css" integrity="sha256-3iu9jgsy9TpTwXKb7bNQzqWekRX7pPK+2OLj3R922fo=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/3.5.0/octicons.min.css" integrity="sha256-QiWfLIsCT02Sdwkogf6YMiQlj4NE84MKkzEMkZnMGdg=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.5.1/themes/prism.min.css" integrity="sha256-vtR0hSWRc3Tb26iuN2oZHt3KRUomwTufNIf5/4oeCyg=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/styles/github-gist.min.css" integrity="sha256-tAflq+ymku3Khs+I/WcAneIlafYgDiOQ9stIHH985Wo=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/emojify.js/1.1.0/css/basic/emojify.min.css" integrity="sha256-UOrvMOsSDSrW6szVLe8ZDZezBxh5IoIfgTwdNDgTjiU=" crossorigin="anonymous" />
+    <style>
+        @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,600,600italic,300italic,300|Source+Serif+Pro|Source+Code+Pro:400,300,500&subset=latin,latin-ext);.markdown-body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.5;word-wrap:break-word}.markdown-body:after,.markdown-body:before{display:table;content:""}.markdown-body:after{clear:both}.markdown-body>:first-child{margin-top:0!important}.markdown-body>:last-child{margin-bottom:0!important}.markdown-body a:not([href]){color:inherit;text-decoration:none}.markdown-body .absent{color:#c00}.markdown-body .anchor{float:left;padding-right:4px;margin-left:-20px;line-height:1}.markdown-body .anchor:focus{outline:none}.markdown-body blockquote,.markdown-body dl,.markdown-body ol,.markdown-body p,.markdown-body pre,.markdown-body table,.markdown-body ul{margin-top:0;margin-bottom:16px}.markdown-body hr{height:.25em;padding:0;margin:24px 0;background-color:#e7e7e7;border:0}.markdown-body blockquote{padding:0 1em;color:#777;border-left:.25em solid #ddd}.markdown-body blockquote>:first-child{margin-top:0}.markdown-body blockquote>:last-child{margin-bottom:0}.markdown-body .loweralpha{list-style-type:lower-alpha}.markdown-body h1,.markdown-body h2,.markdown-body h3,.markdown-body h4,.markdown-body h5,.markdown-body h6{margin-top:24px;margin-bottom:16px;font-weight:600;line-height:1.25}.markdown-body h1 .octicon-link,.markdown-body h2 .octicon-link,.markdown-body h3 .octicon-link,.markdown-body h4 .octicon-link,.markdown-body h5 .octicon-link,.markdown-body h6 .octicon-link{color:#000;vertical-align:middle;visibility:hidden}.markdown-body h1:hover .anchor,.markdown-body h2:hover .anchor,.markdown-body h3:hover .anchor,.markdown-body h4:hover .anchor,.markdown-body h5:hover .anchor,.markdown-body h6:hover .anchor{text-decoration:none}.markdown-body h1:hover .anchor .octicon-link,.markdown-body h2:hover .anchor .octicon-link,.markdown-body h3:hover .anchor .octicon-link,.markdown-body h4:hover .anchor .octicon-link,.markdown-body h5:hover .anchor .octicon-link,.markdown-body h6:hover .anchor .octicon-link{visibility:visible}.markdown-body h1 code,.markdown-body h1 tt,.markdown-body h2 code,.markdown-body h2 tt,.markdown-body h3 code,.markdown-body h3 tt,.markdown-body h4 code,.markdown-body h4 tt,.markdown-body h5 code,.markdown-body h5 tt,.markdown-body h6 code,.markdown-body h6 tt{font-size:inherit}.markdown-body h1{font-size:2em}.markdown-body h1,.markdown-body h2{padding-bottom:.3em;border-bottom:1px solid #eee}.markdown-body h2{font-size:1.5em}.markdown-body h3{font-size:1.25em}.markdown-body h4{font-size:1em}.markdown-body h5{font-size:.875em}.markdown-body h6{font-size:.85em;color:#777}.markdown-body ol,.markdown-body ul{padding-left:2em}.markdown-body ol.no-list,.markdown-body ul.no-list{padding:0;list-style-type:none}.markdown-body ol ol,.markdown-body ol ul,.markdown-body ul ol,.markdown-body ul ul{margin-top:0;margin-bottom:0}.markdown-body li>p{margin-top:16px}.markdown-body li+li{margin-top:.25em}.markdown-body dl{padding:0}.markdown-body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}.markdown-body dl dd{padding:0 16px;margin-bottom:16px}.markdown-body table{display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}.markdown-body table th{font-weight:700}.markdown-body table td,.markdown-body table th{padding:6px 13px;border:1px solid #ddd}.markdown-body table tr{background-color:#fff;border-top:1px solid #ccc}.markdown-body table tr:nth-child(2n){background-color:#f8f8f8}.markdown-body img{max-width:100%;box-sizing:content-box;background-color:#fff}.markdown-body img[align=right]{padding-left:20px}.markdown-body img[align=left]{padding-right:20px}.markdown-body .emoji{max-width:none;vertical-align:text-top;background-color:transparent}.markdown-body span.frame{display:block;overflow:hidden}.markdown-body span.frame>span{display:block;float:left;width:auto;padding:7px;margin:13px 0 0;overflow:hidden;border:1px solid #ddd}.markdown-body span.frame span img{display:block;float:left}.markdown-body span.frame span span{display:block;padding:5px 0 0;clear:both;color:#333}.markdown-body span.align-center{display:block;overflow:hidden;clear:both}.markdown-body span.align-center>span{display:block;margin:13px auto 0;overflow:hidden;text-align:center}.markdown-body span.align-center span img{margin:0 auto;text-align:center}.markdown-body span.align-right{display:block;overflow:hidden;clear:both}.markdown-body span.align-right>span{display:block;margin:13px 0 0;overflow:hidden;text-align:right}.markdown-body span.align-right span img{margin:0;text-align:right}.markdown-body span.float-left{display:block;float:left;margin-right:13px;overflow:hidden}.markdown-body span.float-left span{margin:13px 0 0}.markdown-body span.float-right{display:block;float:right;margin-left:13px;overflow:hidden}.markdown-body span.float-right>span{display:block;margin:13px auto 0;overflow:hidden;text-align:right}.markdown-body code,.markdown-body tt{padding:0;padding-top:.2em;padding-bottom:.2em;margin:0;font-size:85%;background-color:rgba(0,0,0,.04);border-radius:3px}.markdown-body code:after,.markdown-body code:before,.markdown-body tt:after,.markdown-body tt:before{letter-spacing:-.2em;content:"\A0"}.markdown-body code br,.markdown-body tt br{display:none}.markdown-body del code{text-decoration:inherit}.markdown-body pre{word-wrap:normal}.markdown-body pre>code{padding:0;margin:0;font-size:100%;word-break:normal;white-space:pre;background:transparent;border:0}.markdown-body .highlight{margin-bottom:16px}.markdown-body .highlight pre{margin-bottom:0;word-break:normal}.markdown-body .highlight pre,.markdown-body pre{padding:16px;overflow:auto;font-size:85%;line-height:1.45;background-color:#f7f7f7;border-radius:3px}.markdown-body pre code,.markdown-body pre tt{display:inline;max-width:auto;padding:0;margin:0;overflow:visible;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}.markdown-body pre code:after,.markdown-body pre code:before,.markdown-body pre tt:after,.markdown-body pre tt:before{content:normal}.markdown-body .csv-data td,.markdown-body .csv-data th{padding:5px;overflow:hidden;font-size:12px;line-height:1;text-align:left;white-space:nowrap}.markdown-body .csv-data .blob-line-num{padding:10px 8px 9px;text-align:right;background:#fff;border:0}.markdown-body .csv-data tr{border-top:0}.markdown-body .csv-data th{font-weight:700;background:#f8f8f8;border-top:0}.markdown-body kbd{display:inline-block;padding:3px 5px;font-size:11px;line-height:10px;color:#555;vertical-align:middle;background-color:#fcfcfc;border:1px solid #ccc;border-bottom-color:#bbb;border-radius:3px;box-shadow:inset 0 -1px 0 #bbb}.news .alert .markdown-body blockquote{padding:0 0 0 40px;border:0 none}.activity-tab .news .alert .commits,.activity-tab .news .markdown-body blockquote{padding-left:0}.task-list-item{list-style-type:none}.task-list-item label{font-weight:400}.task-list-item.enabled label{cursor:pointer}.task-list-item+.task-list-item{margin-top:3px}.task-list-item-checkbox{float:left;margin:.31em 0 .2em -1.3em!important;vertical-align:middle;cursor:default!important}.markdown-body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Helvetica,Arial,sans-serif;padding-top:40px;padding-bottom:40px;max-width:758px;overflow:visible!important}.markdown-body pre{border:inherit!important}.markdown-body code{color:inherit!important}.markdown-body pre code .wrapper{display:-moz-inline-flex;display:-ms-inline-flex;display:-o-inline-flex;display:inline-flex}.markdown-body pre code .gutter{float:left;overflow:hidden;-webkit-user-select:none;user-select:none}.markdown-body pre code .gutter.linenumber{text-align:right;position:relative;display:inline-block;cursor:default;z-index:4;padding:0 8px 0 0;min-width:20px;box-sizing:content-box;color:#afafaf!important;border-right:3px solid #6ce26c!important}.markdown-body pre code .gutter.linenumber>span:before{content:attr(data-linenumber)}.markdown-body pre code .code{float:left;margin:0 0 0 16px}.markdown-body .gist .line-numbers{border-left:none;border-top:none;border-bottom:none}.markdown-body .gist .line-data{border:none}.markdown-body .gist table{border-spacing:0;border-collapse:inherit!important}.markdown-body code[data-gist-id]{background:none;padding:0}.markdown-body code[data-gist-id]:after,.markdown-body code[data-gist-id]:before{content:""}.markdown-body code[data-gist-id] .blob-num{border:unset}.markdown-body code[data-gist-id] table{overflow:unset;margin-bottom:unset}.markdown-body code[data-gist-id] table tr{background:unset}.markdown-body[dir=rtl] pre{direction:ltr}.markdown-body[dir=rtl] code{direction:ltr;unicode-bidi:embed}.markdown-body .alert>p{margin-bottom:0}.markdown-body pre.abc,.markdown-body pre.flow-chart,.markdown-body pre.graphviz,.markdown-body pre.mermaid,.markdown-body pre.sequence-diagram{text-align:center;background-color:inherit;border-radius:0;white-space:inherit}.markdown-body pre.abc>code,.markdown-body pre.flow-chart>code,.markdown-body pre.graphviz>code,.markdown-body pre.mermaid>code,.markdown-body pre.sequence-diagram>code{text-align:left}.markdown-body pre.abc>svg,.markdown-body pre.flow-chart>svg,.markdown-body pre.graphviz>svg,.markdown-body pre.mermaid>svg,.markdown-body pre.sequence-diagram>svg{max-width:100%;height:100%}.markdown-body pre>code.wrap{white-space:pre-wrap;white-space:-moz-pre-wrap;white-space:-pre-wrap;white-space:-o-pre-wrap;word-wrap:break-word}.markdown-body .alert>p,.markdown-body .alert>ul{margin-bottom:0}.vimeo,.youtube{cursor:pointer;display:table;text-align:center;background-position:50%;background-repeat:no-repeat;background-size:contain;background-color:#000;overflow:hidden}.vimeo,.youtube{position:relative;width:100%}.youtube{padding-bottom:56.25%}.vimeo img{width:100%;object-fit:contain;z-index:0}.youtube img{object-fit:cover;z-index:0}.vimeo iframe,.youtube iframe,.youtube img{width:100%;height:100%;position:absolute;top:0;left:0}.vimeo iframe,.youtube iframe{vertical-align:middle;z-index:1}.vimeo .icon,.youtube .icon{position:absolute;height:auto;width:auto;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;opacity:.3;-webkit-transition:opacity .2s;transition:opacity .2s;z-index:0}.vimeo:hover .icon,.youtube:hover .icon{opacity:.6;-webkit-transition:opacity .2s;transition:opacity .2s}.slideshare .inner,.speakerdeck .inner{position:relative;width:100%}.slideshare .inner iframe,.speakerdeck .inner iframe{position:absolute;top:0;bottom:0;left:0;right:0;width:100%;height:100%}.MJX_Assistive_MathML{display:none}.ui-infobar{position:relative;z-index:2;max-width:758px;margin-top:25px;margin-bottom:-25px;color:#777}.ui-toc{position:fixed;bottom:20px;z-index:10000}.ui-toc-label{opacity:.3;background-color:#ccc;border:none}.ui-toc-label,.ui-toc .open .ui-toc-label{-webkit-transition:opacity .2s;transition:opacity .2s}.ui-toc .open .ui-toc-label{opacity:1;color:#fff}.ui-toc-label:focus{opacity:.3;background-color:#ccc;color:#000}.ui-toc-label:hover{opacity:1;background-color:#ccc;-webkit-transition:opacity .2s;transition:opacity .2s}.ui-toc-dropdown{margin-top:23px;margin-bottom:20px;padding-left:10px;padding-right:10px;max-width:45vw;width:25vw;max-height:70vh;overflow:auto;text-align:inherit}.ui-toc-dropdown>.toc{max-height:calc(70vh - 100px);overflow:auto}.ui-toc-dropdown[dir=rtl] .nav{padding-right:0;letter-spacing:.0029em}.ui-toc-dropdown a{overflow:hidden;text-overflow:ellipsis;white-space:pre}.ui-toc-dropdown .nav>li>a{display:block;padding:4px 20px;font-size:13px;font-weight:500;color:#767676}.ui-toc-dropdown .nav>li:first-child:last-child > ul,.ui-toc-dropdown .toc.expand ul{display:block}.ui-toc-dropdown .nav>li>a:focus,.ui-toc-dropdown .nav>li>a:hover{padding-left:19px;color:#000;text-decoration:none;background-color:transparent;border-left:1px solid #000}.ui-toc-dropdown[dir=rtl] .nav>li>a:focus,.ui-toc-dropdown[dir=rtl] .nav>li>a:hover{padding-right:19px;border-left:none;border-right:1px solid #000}.ui-toc-dropdown .nav>.active:focus>a,.ui-toc-dropdown .nav>.active:hover>a,.ui-toc-dropdown .nav>.active>a{padding-left:18px;font-weight:700;color:#000;background-color:transparent;border-left:2px solid #000}.ui-toc-dropdown[dir=rtl] .nav>.active:focus>a,.ui-toc-dropdown[dir=rtl] .nav>.active:hover>a,.ui-toc-dropdown[dir=rtl] .nav>.active>a{padding-right:18px;border-left:none;border-right:2px solid #000}.ui-toc-dropdown .nav .nav{display:none;padding-bottom:10px}.ui-toc-dropdown .nav>.active>ul{display:block}.ui-toc-dropdown .nav .nav>li>a{padding-top:1px;padding-bottom:1px;padding-left:30px;font-size:12px;font-weight:400}.ui-toc-dropdown[dir=rtl] .nav .nav>li>a{padding-right:30px}.ui-toc-dropdown .nav .nav>li>ul>li>a{padding-top:1px;padding-bottom:1px;padding-left:40px;font-size:12px;font-weight:400}.ui-toc-dropdown[dir=rtl] .nav .nav>li>ul>li>a{padding-right:40px}.ui-toc-dropdown .nav .nav>li>a:focus,.ui-toc-dropdown .nav .nav>li>a:hover{padding-left:29px}.ui-toc-dropdown[dir=rtl] .nav .nav>li>a:focus,.ui-toc-dropdown[dir=rtl] .nav .nav>li>a:hover{padding-right:29px}.ui-toc-dropdown .nav .nav>li>ul>li>a:focus,.ui-toc-dropdown .nav .nav>li>ul>li>a:hover{padding-left:39px}.ui-toc-dropdown[dir=rtl] .nav .nav>li>ul>li>a:focus,.ui-toc-dropdown[dir=rtl] .nav .nav>li>ul>li>a:hover{padding-right:39px}.ui-toc-dropdown .nav .nav>.active:focus>a,.ui-toc-dropdown .nav .nav>.active:hover>a,.ui-toc-dropdown .nav .nav>.active>a{padding-left:28px;font-weight:500}.ui-toc-dropdown[dir=rtl] .nav .nav>.active:focus>a,.ui-toc-dropdown[dir=rtl] .nav .nav>.active:hover>a,.ui-toc-dropdown[dir=rtl] .nav .nav>.active>a{padding-right:28px}.ui-toc-dropdown .nav .nav>.active>.nav>.active:focus>a,.ui-toc-dropdown .nav .nav>.active>.nav>.active:hover>a,.ui-toc-dropdown .nav .nav>.active>.nav>.active>a{padding-left:38px;font-weight:500}.ui-toc-dropdown[dir=rtl] .nav .nav>.active>.nav>.active:focus>a,.ui-toc-dropdown[dir=rtl] .nav .nav>.active>.nav>.active:hover>a,.ui-toc-dropdown[dir=rtl] .nav .nav>.active>.nav>.active>a{padding-right:38px}.markdown-body[lang^=ja]{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Helvetica,Arial,Hiragino Kaku Gothic Pro,\\30D2\30E9\30AE\30CE\89D2\30B4 Pro W3,Osaka,Meiryo,\\30E1\30A4\30EA\30AA,MS Gothic,"\FF2D\FF33   \30B4\30B7\30C3\30AF",sans-serif}.ui-toc-dropdown[lang^=ja]{font-family:Source Sans Pro,Helvetica,Arial,Meiryo UI,MS PGothic,"\FF2D\FF33   \FF30\30B4\30B7\30C3\30AF",sans-serif}.markdown-body[lang=zh-tw]{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Helvetica,Arial,PingFang TC,Microsoft JhengHei,\\5FAE\8EDF\6B63\9ED1,sans-serif}.ui-toc-dropdown[lang=zh-tw]{font-family:Source Sans Pro,Helvetica,Arial,Microsoft JhengHei UI,\\5FAE\8EDF\6B63\9ED1UI,sans-serif}.markdown-body[lang=zh-cn]{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Helvetica,Arial,PingFang SC,Microsoft YaHei,\\5FAE\8F6F\96C5\9ED1,sans-serif}.ui-toc-dropdown[lang=zh-cn]{font-family:Source Sans Pro,Helvetica,Arial,Microsoft YaHei UI,\\5FAE\8F6F\96C5\9ED1UI,sans-serif}.ui-affix-toc{position:fixed;top:0;max-width:15vw;max-height:70vh;overflow:auto}.back-to-top,.expand-toggle,.go-to-bottom{display:block;padding:4px 10px;margin-top:10px;margin-left:10px;font-size:12px;font-weight:500;color:#999}.back-to-top:focus,.back-to-top:hover,.expand-toggle:focus,.expand-toggle:hover,.go-to-bottom:focus,.go-to-bottom:hover{color:#563d7c;text-decoration:none}.back-to-top,.go-to-bottom{margin-top:0}.ui-user-icon{width:20px;height:20px;display:block;border-radius:3px;margin-top:2px;margin-bottom:2px;margin-right:5px;background-position:50%;background-repeat:no-repeat;background-size:contain}.ui-user-icon.small{width:18px;height:18px;display:inline-block;vertical-align:middle;margin:0 0 .2em}small span{line-height:22px}small .dropdown{display:inline-block}small .dropdown a:focus,small .dropdown a:hover{text-decoration:none}.unselectable{-moz-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none}@media print{blockquote,div,img,pre,table{page-break-inside:avoid!important}a[href]:after{font-size:12px!important}}.markdown-body.slides{position:relative;z-index:1;color:#222}.markdown-body.slides:before{content:"";display:block;position:absolute;top:0;left:0;right:0;bottom:0;z-index:-1;background-color:currentColor;box-shadow:0 0 0 50vw}.markdown-body.slides section[data-markdown]{position:relative;margin-bottom:1.5em;background-color:#fff;text-align:center}.markdown-body.slides section[data-markdown] code{text-align:left}.markdown-body.slides section[data-markdown]:before{content:"";display:block;padding-bottom:56.23%}.markdown-body.slides section[data-markdown]>div:first-child{position:absolute;top:50%;left:1em;right:1em;transform:translateY(-50%);max-height:100%;overflow:hidden}.markdown-body.slides section[data-markdown]>ul{display:inline-block}.markdown-body.slides>section>section+section:after{content:"";position:absolute;top:-1.5em;right:1em;height:1.5em;border:3px solid #777}body{font-smoothing:subpixel-antialiased!important;-webkit-font-smoothing:subpixel-antialiased!important;-moz-osx-font-smoothing:auto!important;text-shadow:0 0 1em transparent,1px 1px 1.2px rgba(0,0,0,.004);-webkit-overflow-scrolling:touch;font-family:Source Sans Pro,Helvetica,Arial,sans-serif;letter-spacing:.025em}.focus,:focus{outline:none!important}::-moz-focus-inner{border:0!important}body.modal-open{overflow-y:auto;padding-right:0!important}
+    </style>
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js" integrity="sha256-3Jy/GbSLrg0o9y5Z5n1uw0qxZECH7C6OQpVBgNFYa0g=" crossorigin="anonymous"></script>
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js" integrity="sha256-g6iAfvZp+nDQ2TdTR/VVKJf3bGro4ub5fvWSWVRi2NE=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js" integrity="sha256-8E4Is26QH0bD52WoQpcB+R/tcWQtpzlCojrybUd7Mxo=" crossorigin="anonymous"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <div id="doc" class="markdown-body container-fluid"><h1 id="rtp-streaming-and-nat-network-address-translation-traversal"><a class="anchor hidden-xs" href="#rtp-streaming-and-nat-network-address-translation-traversal" title="rtp-streaming-and-nat-network-address-translation-traversal"><span class="octicon octicon-link"></span></a>RTP Streaming and NAT (Network Address Translation) Traversal</h1><h2 id="part-1-wireshark-labs"><a class="anchor hidden-xs" href="#part-1-wireshark-labs" title="part-1-wireshark-labs"><span class="octicon octicon-link"></span></a>Part 1: Wireshark Labs</h2><h4 id="getting-started"><a class="anchor hidden-xs" href="#getting-started" title="getting-started"><span class="octicon octicon-link"></span></a>Getting started</h4><ol>
+<li>
+<p><strong>Q2</strong>: As shown in the screen shot below, the GET was sent at 22:24:24.779707 and the reply was received at 22:24:24.846889. The delay was 0.067182 secs.<br>
+<img src="/uploads/upload_bc0086b3448e1e3b2244611d08086119.png" alt=""></p>
+</li>
+<li>
+<p><strong>Q4</strong>: The print out of the two HTTP messages are below:</p>
+<ul>
+<li>HTTP GET message:</li>
+</ul>
+<pre><code class="hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span>
+<span data-linenumber="2"></span>
+<span data-linenumber="3"></span>
+<span data-linenumber="4"></span>
+<span data-linenumber="5"></span>
+<span data-linenumber="6"></span>
+<span data-linenumber="7"></span>
+<span data-linenumber="8"></span>
+<span data-linenumber="9"></span>
+<span data-linenumber="10"></span>
+<span data-linenumber="11"></span>
+<span data-linenumber="12"></span>
+<span data-linenumber="13"></span>
+<span data-linenumber="14"></span>
+<span data-linenumber="15"></span>
+<span data-linenumber="16"></span>
+<span data-linenumber="17"></span>
+<span data-linenumber="18"></span>
+<span data-linenumber="19"></span>
+<span data-linenumber="20"></span>
+<span data-linenumber="21"></span>
+<span data-linenumber="22"></span>
+<span data-linenumber="23"></span></div><div class="code">No. Time Source Destination Protocol Length Info
+7910 22:24:24.779707 140.114.77.125 140.114.89.208 HTTP 756 GET /history HTTP/1.1
+Frame 7910: 756 bytes on wire (6048 bits), 756 bytes captured (6048 bits) on interface 0
+Interface id: 0 (\Device\NPF_{566C6BE0-C0F9-4A64-8944-53AD4C61C76B})
+Encapsulation type: Ethernet (1)
+Arrival Time: Apr 26, 2017 22:24:24.779707000 Taipei Standard Time
+[Time shift for this packet: 0.000000000 seconds]
+Epoch Time: 1493216664.779707000 seconds
+[Time delta from previous captured frame: 0.039432000 seconds]
+[Time delta from previous displayed frame: 0.119897000 seconds]
+[Time since reference or first frame: 32.455729000 seconds]
+Frame Number: 7910
+Frame Length: 756 bytes (6048 bits)
+Capture Length: 756 bytes (6048 bits)
+[Frame is marked: False]
+[Frame is ignored: False]
+[Protocols in frame: eth:ethertype:ip:tcp:http]
+[Coloring Rule Name: HTTP]
+[Coloring Rule String: http || tcp.port == 80 || http2]
+Ethernet II, Src: AsustekC_92:40:8c (74:d0:2b:92:40:8c), Dst: IETF-VRRP-VRID_4d (00:00:5e:00:01:4d)
+Internet Protocol Version 4, Src: 140.114.77.125, Dst: 140.114.89.208
+Transmission Control Protocol, Src Port: 50364, Dst Port: 3000, Seq: 1422, Ack: 647, Len: 702
+Hypertext Transfer Protocol
+</div></div></code></pre>
+<ul>
+<li>HTTP REPLY message:</li>
+</ul>
+<pre><code class="hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span>
+<span data-linenumber="2"></span>
+<span data-linenumber="3"></span>
+<span data-linenumber="4"></span>
+<span data-linenumber="5"></span>
+<span data-linenumber="6"></span>
+<span data-linenumber="7"></span>
+<span data-linenumber="8"></span>
+<span data-linenumber="9"></span>
+<span data-linenumber="10"></span>
+<span data-linenumber="11"></span>
+<span data-linenumber="12"></span>
+<span data-linenumber="13"></span>
+<span data-linenumber="14"></span>
+<span data-linenumber="15"></span>
+<span data-linenumber="16"></span>
+<span data-linenumber="17"></span>
+<span data-linenumber="18"></span>
+<span data-linenumber="19"></span>
+<span data-linenumber="20"></span>
+<span data-linenumber="21"></span>
+<span data-linenumber="22"></span>
+<span data-linenumber="23"></span>
+<span data-linenumber="24"></span>
+<span data-linenumber="25"></span></div><div class="code">No. Time Source Destination Protocol Length Info
+7928 22:24:24.846889 140.114.89.208 140.114.77.125 HTTP 1189 HTTP/1.1 200 OK (application/json)
+Frame 7928: 1189 bytes on wire (9512 bits), 1189 bytes captured (9512 bits) on interface 0
+Interface id: 0 (\Device\NPF_{566C6BE0-C0F9-4A64-8944-53AD4C61C76B})
+Encapsulation type: Ethernet (1)
+Arrival Time: Apr 26, 2017 22:24:24.846889000 Taipei Standard Time
+[Time shift for this packet: 0.000000000 seconds]
+Epoch Time: 1493216664.846889000 seconds
+[Time delta from previous captured frame: 0.000485000 seconds]
+[Time delta from previous displayed frame: 0.067182000 seconds]
+[Time since reference or first frame: 32.522911000 seconds]
+Frame Number: 7928
+Frame Length: 1189 bytes (9512 bits)
+Capture Length: 1189 bytes (9512 bits)
+[Frame is marked: False]
+[Frame is ignored: False]
+[Protocols in frame: eth:ethertype:ip:tcp:http:data:data:json]
+[Coloring Rule Name: HTTP]
+[Coloring Rule String: http || tcp.port == 80 || http2]
+Ethernet II, Src: Cisco_91:bd:40 (7c:ad:74:91:bd:40), Dst: AsustekC_92:40:8c (74:d0:2b:92:40:8c)
+Internet Protocol Version 4, Src: 140.114.89.208, Dst: 140.114.77.125
+Transmission Control Protocol, Src Port: 3000, Dst Port: 50364, Seq: 1097, Ack: 2124, Len: 1135
+[2 Reassembled TCP Segments (1585 bytes): #7916(450), #7928(1135)]
+Hypertext Transfer Protocol
+JavaScript Object Notation: application/json
+</div></div></code></pre>
+</li>
+</ol><h3 id="tcp"><a class="anchor hidden-xs" href="#tcp" title="tcp"><span class="octicon octicon-link"></span></a>TCP</h3><ol>
+<li>
+<p><strong>Q9</strong>: The minimum amount of buffer space (receiver window) advertised at the received (<a href="http://gaia.cs.umass.edu" target="_blank">gaia.cs.umass.edu</a>) is 5840 bytes, which shows in the first acknowledgement from the server. This receiver window grows steadily until a maximum receiver buffer size of 62780 bytes. The sender is never throttled due to lacking of receiver buffer space by inspecting this trace.<br>
+<img src="/uploads/upload_7ee815a9b17a693e19a8efd4e17970cd.png" alt=""></p>
+</li>
+<li>
+<p><strong>Q13</strong>: TCP Slow Start phase begins at the start of the connection. The identification of the TCP slow start phase and congestion avoidance phase depends on the value of the congestion window size of this TCP sender. However, the value of the congestion window size cannot be obtained directly from the Time-Sequence-Graph (Stevens) graph. Nevertheless, we can estimate the lower bound of the TCP window size by the amount of outstanding data because the outstanding data is the amount of data without acknowledgement. We also know that TCP window is constrained by the receiver window size and the receiver buffer can act as the upper bound of the TCP window size. In this trace, the receiver buffer is not the bottleneck; therefore, this upper bound is not quite useful to infer the TCP window size.<br>
+<img src="/uploads/upload_48e659fb24f66d29028ed7612e0032f5.png" alt=""></p>
+</li>
+</ol><h3 id="nat"><a class="anchor hidden-xs" href="#nat" title="nat"><span class="octicon octicon-link"></span></a>NAT</h3><ol>
+<li>
+<p><strong>Q5</strong>:</p>
+<ol>
+<li>7.075657</li>
+<li>Source is 192.168.1.100, port is 4335. Destination is 64.223.169.104, port is 80.</li>
+<li>Source is 64.233.169.104, port is 80. Destination is 64.233.169.104, port is 4335.</li>
+<li>7.108986</li>
+</ol>
+</li>
+<li>
+<p><strong>Q9</strong>:</p>
+<ol>
+<li>6.035475, and 6.067775, respectively</li>
+<li>: Source is 71.192.34.104, port is 4335. Destination is 64.233.169.104, port is 80. For the ACK: Source is 64.233.169.104, port is 80. Destination is 71.192.34.104, port is 4335.</li>
+</ol>
+</li>
+</ol><h3 id="80211"><a class="anchor hidden-xs" href="#80211" title="80211"><span class="octicon octicon-link"></span></a>802.11</h3><ol>
+<li>
+<p><strong>Q6</strong>: : The support rates are 1.0, 2.0, 5.5, 11.0 Mbps. The extended rates are 6.0, 9.0, 12.0, 18.0, 24.0, 36.0, 48.0 and 54.0 Mbps.</p>
+</li>
+<li>
+<p><strong>Q7</strong>:<br>
+The TCP SYN is sent at t = 24.811093 seconds into the trace. The MAC address for the host sending the TCP SYN is 00:13:02:d1:b6:4f. The MAC address for the destination, which the first hop router to which the host is connected, is 00:16:b6:f4:eb:a8. The MAC address for the BSS is 00:16:b6:f7:1d:51.<br>
+The IP address of the host sending the TCP SYN is 192.168.1.109. Note that this is a NATed address. The destination address is 128.199.245.12. This corresponds to the server <a href="http://gaia.cs.umass.edu" target="_blank">gaia.cs.umass.edu</a>. It is important to understand that the destination MAC address of the frame containing the SYN, is different from the destination IP address of the IP packet contained within this frame. Make sure you understand this distinction! (If you’re a bit hazy on this, re-read pages 468 and 469 in the 4th edition of the text).<br>
+The idealized behavior of TCP in the text assumes that TCP senders are aggressive in sending data. Too much traffic may congest the network; therefore, TCP senders should follow the AIMD algorithm so that when they detect network congestion (i.e., packet loss), their sending window size should drop down.<br>
+In the practice, TCP behavior also largely depends on the application. In this example, when the TCP sender can send out data, there are no data available for transmission. In the web application, some of web objects have very small sizes. Before the end of slow start phase, the transmission is over; hence, the transmission of these small web objects suffers from the unnecessary long delay because of the slow start phase of TCP.</p>
+</li>
+</ol><h2 id="part-2-udp-streaming"><a class="anchor hidden-xs" href="#part-2-udp-streaming" title="part-2-udp-streaming"><span class="octicon octicon-link"></span></a>Part 2: UDP Streaming</h2><ul>
+<li><a href="http://www.live555.com/liveMedia/faq.html#testRTSPClient-how-to-decode-data" target="_blank">(FAQ) about the “LIVE555 Streaming Media” libraries</a></li>
+<li><a href="http://www.evanlin.com/live555openrtspsdlffmpeg-e5-88-a9-e7-94-a8ffmpeg-e8-88-87sdl-e9-81-94-e6-88-90-streaming-e7-ad-86-e8-a8-981/" target="_blank">[live555][OpenRTSP][SDL][ffmpeg] 利用ffmpeg 與SDL 達成 streaming 筆記(1)</a></li>
+<li><a href="http://www.evanlin.com/live555openrtspsdlffmpeg-e5-88-a9-e7-94-a8ffmpeg-e8-88-87sdl-e9-81-94-e6-88-90-streaming-e7-ad-86-e8-a8-982/" target="_blank">[live555][OpenRTSP][SDL][ffmpeg] 利用ffmpeg 與SDL 達成 streaming 筆記(2)</a></li>
+<li><a href="http://blog.csdn.net/gubenpeiyuan/article/details/19072223" target="_blank">Live555接收h264使用ffmpeg解碼為YUV420</a></li>
+<li><a href="https://github.com/yuvalk/demoLive555withFFMPEG" target="_blank">demoLive555withFFMPEG</a></li>
+<li><a href="http://blog.chinaunix.net/uid-15063109-id-4482932.html" target="_blank">基於live555的rtsp客戶端接收及ffmpeg解碼</a></li>
+<li><a href="http://blog.csdn.net/ghgui008/article/details/21552603" target="_blank">Live555 + h264 + ffmpeg客戶端解碼筆記</a></li>
+<li><a href="http://stackoverflow.com/questions/10715170/receiving-rtsp-stream-using-ffmpeg-library" target="_blank">Receiving RTSP stream using FFMPEG library</a></li>
+</ul><h3 id="compile-ffmpeg"><a class="anchor hidden-xs" href="#compile-ffmpeg" title="compile-ffmpeg"><span class="octicon octicon-link"></span></a>Compile FFmpeg</h3><p>Here is my guideline about how to compile ffmpeg step by step, you can also check <a href="https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu" target="_blank">ffmpeg official guideline</a> to do the same thing.</p><ol>
+<li>Install needed libraries:</li>
+</ol><pre><code class="shell hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span>
+<span data-linenumber="2"></span>
+<span data-linenumber="3"></span>
+<span data-linenumber="4"></span>
+<span data-linenumber="5"></span>
+<span data-linenumber="6"></span>
+<span data-linenumber="7"></span>
+<span data-linenumber="8"></span>
+<span data-linenumber="9"></span>
+<span data-linenumber="10"></span>
+<span data-linenumber="11"></span>
+<span data-linenumber="12"></span>
+<span data-linenumber="13"></span>
+<span data-linenumber="14"></span>
+<span data-linenumber="15"></span>
+<span data-linenumber="16"></span>
+<span data-linenumber="17"></span>
+<span data-linenumber="18"></span>
+<span data-linenumber="19"></span>
+<span data-linenumber="20"></span>
+<span data-linenumber="21"></span>
+<span data-linenumber="22"></span>
+<span data-linenumber="23"></span>
+<span data-linenumber="24"></span></div><div class="code"><span class="hljs-meta"># First get all the dependencies</span>
+sudo apt-<span class="hljs-keyword">get</span> update
+sudo apt-<span class="hljs-keyword">get</span> -y install autoconf automake build-essential libass-dev libfreetype6-dev libsdl2-dev libtheora-dev libtool libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev pkg-config texinfo zlib1g-dev
+
+<span class="hljs-meta"># Install yasm (version ≥ 1.2.0)</span>
+sudo apt-<span class="hljs-keyword">get</span> install yasm 
+
+<span class="hljs-meta">#Install libx264 (version ≥ 118)</span>
+sudo apt-<span class="hljs-keyword">get</span> install libx264-dev
+
+<span class="hljs-meta"># Install libx265 (version ≥ 68)</span>
+sudo apt-<span class="hljs-keyword">get</span> install libx265-dev
+
+<span class="hljs-meta"># Install libfdk-aac</span>
+sudo apt-<span class="hljs-keyword">get</span> install libfdk-aac-dev
+
+<span class="hljs-meta"># Install libmp3lame (version ≥ 3.98.3)</span>
+sudo apt-<span class="hljs-keyword">get</span> install libmp3lame-dev
+
+<span class="hljs-meta"># Install libopus (version ≥ 1.1)</span>
+sudo apt-<span class="hljs-keyword">get</span> install libopus-dev
+
+<span class="hljs-meta"># Install libvpx (version ≥ 0.9.7)</span>
+sudo apt-<span class="hljs-keyword">get</span> install libvpx-dev
+</div></div></code></pre><ol start="2">
+<li>Make a directory for the source files that will be downloaded later in this guide:</li>
+</ol><pre><code class="shell hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span></div><div class="code"><span class="hljs-attribute">mkdir</span> ~/ffmpeg_sources
+</div></div></code></pre><ol start="3">
+<li>Make a directory for the build files:</li>
+</ol><pre><code class="shell hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span></div><div class="code"><span class="hljs-attribute">mkdir</span> ~/ffmpeg_build
+</div></div></code></pre><ol start="4">
+<li>Now, you are ready to compile ffmpeg:</li>
+</ol><pre><code class="shell hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span>
+<span data-linenumber="2"></span>
+<span data-linenumber="3"></span>
+<span data-linenumber="4"></span>
+<span data-linenumber="5"></span>
+<span data-linenumber="6"></span>
+<span data-linenumber="7"></span>
+<span data-linenumber="8"></span>
+<span data-linenumber="9"></span>
+<span data-linenumber="10"></span>
+<span data-linenumber="11"></span>
+<span data-linenumber="12"></span>
+<span data-linenumber="13"></span>
+<span data-linenumber="14"></span>
+<span data-linenumber="15"></span>
+<span data-linenumber="16"></span>
+<span data-linenumber="17"></span>
+<span data-linenumber="18"></span>
+<span data-linenumber="19"></span>
+<span data-linenumber="20"></span>
+<span data-linenumber="21"></span>
+<span data-linenumber="22"></span>
+<span data-linenumber="23"></span>
+<span data-linenumber="24"></span></div><div class="code"><span class="hljs-built_in">cd</span> ~/ffmpeg_sources
+wget http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2
+tar xjvf ffmpeg-snapshot.tar.bz2
+<span class="hljs-built_in">cd</span> ffmpeg
+PATH=<span class="hljs-string">"<span class="hljs-variable">$HOME</span>/bin:<span class="hljs-variable">$PATH</span>"</span> PKG_CONFIG_PATH=<span class="hljs-string">"<span class="hljs-variable">$HOME</span>/ffmpeg_build/lib/pkgconfig"</span> ./configure \
+  --prefix=<span class="hljs-string">"<span class="hljs-variable">$HOME</span>/ffmpeg_build"</span> \
+  --pkg-config-flags=<span class="hljs-string">"--static"</span> \
+  --extra-cflags=<span class="hljs-string">"-I<span class="hljs-variable">$HOME</span>/ffmpeg_build/include"</span> \
+  --extra-ldflags=<span class="hljs-string">"-L<span class="hljs-variable">$HOME</span>/ffmpeg_build/lib"</span> \
+  --bindir=<span class="hljs-string">"<span class="hljs-variable">$HOME</span>/bin"</span> \
+  --enable-gpl \
+  --enable-libass \
+  --enable-libfdk-aac \
+  --enable-libfreetype \
+  --enable-libmp3lame \
+  --enable-libopus \
+  --enable-libtheora \
+  --enable-libvorbis \
+  --enable-libvpx \
+  --enable-libx264 \
+  --enable-libx265 \
+  --enable-nonfree
+PATH=<span class="hljs-string">"<span class="hljs-variable">$HOME</span>/bin:<span class="hljs-variable">$PATH</span>"</span> make
+make install
+</div></div></code></pre><p>That’s it.</p><ol start="5">
+<li>(Optional) If you counter some error like failed to install libx265 library like this <code>ffmpeg - ERROR: x265 not found using pkg-config</code>, please delete libx265 and re-install it again. You can also find some detail solution <a href="https://bitbucket.org/multicoreware/x265/issues/125/x265-not-found-using-pkg-config" target="_blank">here</a>.</li>
+</ol><h3 id="compile-live555"><a class="anchor hidden-xs" href="#compile-live555" title="compile-live555"><span class="octicon octicon-link"></span></a>Compile Live555</h3><p>You can find the detail guideline <a href="http://www.live555.com/liveMedia/#config-unix" target="_blank">here</a></p><ol>
+<li>
+<p>Download a <code>live555.tar.gz</code> file, then use “tar -x” and “gunzip” (or “tar -xz”, if available) to extract the package.</p>
+</li>
+<li>
+<p>cd to the “live” directory. Then run</p>
+</li>
+</ol><pre><code class="shell hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span>
+<span data-linenumber="2"></span></div><div class="code"> <span class="hljs-comment"># According yout os-platform, run this command</span>
+ ./genMakefiles linux
+</div></div></code></pre><p>This will generate a Makefile in the “live” directory and each subdirectory.</p><ol start="3">
+<li>Then run <code>make</code>. That’s it.</li>
+</ol><h3 id="compile-simple-directmedia-layer-sdl"><a class="anchor hidden-xs" href="#compile-simple-directmedia-layer-sdl" title="compile-simple-directmedia-layer-sdl"><span class="octicon octicon-link"></span></a>Compile Simple DirectMedia Layer (SDL)</h3><ul>
+<li><a href="https://askubuntu.com/questions/344512/what-is-the-general-procedure-to-install-development-libraries-in-ubuntu" target="_blank">What is the general procedure to install development libraries in Ubuntu?</a></li>
+</ul><ol>
+<li>Install the needed libraries</li>
+</ol><pre><code class="shell hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span>
+<span data-linenumber="2"></span>
+<span data-linenumber="3"></span>
+<span data-linenumber="4"></span>
+<span data-linenumber="5"></span>
+<span data-linenumber="6"></span>
+<span data-linenumber="7"></span>
+<span data-linenumber="8"></span>
+<span data-linenumber="9"></span></div><div class="code">sudo apt-get <span class="hljs-keyword">install</span> libsdl1<span class="hljs-number">.2</span>-dev
+sudo apt-<span class="hljs-keyword">get</span> <span class="hljs-keyword">install</span> liblzma-dev
+sudo apt-<span class="hljs-keyword">get</span> <span class="hljs-keyword">install</span> libfaac-dev
+sudo apt-<span class="hljs-keyword">get</span> <span class="hljs-keyword">install</span> libfdk-aac-dev
+sudo apt-<span class="hljs-keyword">get</span> <span class="hljs-keyword">install</span> libav-tools
+sudo apt-<span class="hljs-keyword">get</span> <span class="hljs-keyword">install</span> zlib1g-dev
+sudo apt-<span class="hljs-keyword">get</span> <span class="hljs-keyword">install</span> libswresample-dev
+sudo apt-<span class="hljs-keyword">get</span> <span class="hljs-keyword">install</span> libswresample-dev
+sudo apt-<span class="hljs-keyword">get</span> <span class="hljs-keyword">install</span> <span class="hljs-keyword">build</span>-essential xorg-dev libudev-dev libts-dev libgl1-mesa-dev libglu1-mesa-dev libasound2-dev libpulse-dev libopenal-dev libogg-dev libvorbis-dev libaudiofile-dev libpng12-dev libfreetype6-dev libusb-dev libdbus<span class="hljs-number">-1</span>-dev zlib1g-dev libdirectfb-dev
+</div></div></code></pre><p>If you unable to locate package, like this <code>E: Unable to locate package libts-dev</code>, just skip it.</p><ol start="2">
+<li>
+<p>Now you can go <a href="http://www.libsdl.org/download-2.0.php" target="_blank">here</a> download “SDL2-2.0.5.tar.gz” extract the archive (you can extract the archive using tar: <code>tar -xvzf SDL2-2.0.0.tar.gz</code>)</p>
+</li>
+<li>
+<p>Now run the follow commands</p>
+</li>
+</ol><pre><code class="shell hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span>
+<span data-linenumber="2"></span>
+<span data-linenumber="3"></span>
+<span data-linenumber="4"></span></div><div class="code"><span class="hljs-built_in">cd</span> SDL2-2.0.5
+./configure 
+make 
+sudo make install
+</div></div></code></pre><p>That’s all.</p><h3 id="compile-the-modified-code-testmyrtspclientcpp-which-is-written-by-myself"><a class="anchor hidden-xs" href="#compile-the-modified-code-testmyrtspclientcpp-which-is-written-by-myself" title="compile-the-modified-code-testmyrtspclientcpp-which-is-written-by-myself"><span class="octicon octicon-link"></span></a>Compile the modified code, testMyRTSPClient.cpp, which is written by myself</h3><ol>
+<li>Go to live555 directory <code>cd live555 &amp;&amp; cd live</code></li>
+<li>Create a your own folder</li>
+</ol><pre><code class="shell hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span>
+<span data-linenumber="2"></span></div><div class="code"><span class="hljs-attribute">mkdir</span><span class="hljs-meta"> [your_folder_name]</span>
+<span class="hljs-attribute">cd</span><span class="hljs-meta"> [your_folder_name]</span>
+</div></div></code></pre><ol start="3">
+<li>Then run <code>make</code> to compile the code, testMyRTSPClient.cpp. That’s it.</li>
+<li>How to use it?</li>
+</ol><pre><code class="shell hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span>
+<span data-linenumber="2"></span>
+<span data-linenumber="3"></span></div><div class="code"><span class="hljs-comment"># Go to live555 folder, called mediaServer, run the streaming server at first</span>
+<span class="hljs-built_in">cd</span> mediaServer
+./live555MediaServer 
+</div></div></code></pre><p>After that, go to the folder you created then run the <code>testMyRTSPClient</code></p><pre><code class="shell hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span></div><div class="code">./<span class="hljs-built_in">test</span>MyRTSPClient rtsp://140.114.77.170:8554/test.264
+</div></div></code></pre><p>It should work successfully, and show up a window playing the video you received.</p><h3 id="optional-creating-static-library-and-linking-using-makefile"><a class="anchor hidden-xs" href="#optional-creating-static-library-and-linking-using-makefile" title="optional-creating-static-library-and-linking-using-makefile"><span class="octicon octicon-link"></span></a>(Optional) <a href="http://maxubuntu.blogspot.tw/2010/02/makefile.html" target="_blank">Creating Static Library and linking using Makefile</a></h3><p>Static libraries are .a files. All the code relating to the library is in this file, and it is directly linked into the program at compile time. Static libraries increase the overall size of the binary, but it means that you don’t need to carry along a copy of the library that is being used. This increases the portability of our program.</p><pre><code class="hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span>
+<span data-linenumber="2"></span>
+<span data-linenumber="3"></span>
+<span data-linenumber="4"></span>
+<span data-linenumber="5"></span>
+<span data-linenumber="6"></span>
+<span data-linenumber="7"></span>
+<span data-linenumber="8"></span>
+<span data-linenumber="9"></span>
+<span data-linenumber="10"></span>
+<span data-linenumber="11"></span>
+<span data-linenumber="12"></span>
+<span data-linenumber="13"></span>
+<span data-linenumber="14"></span>
+<span data-linenumber="15"></span>
+<span data-linenumber="16"></span>
+<span data-linenumber="17"></span>
+<span data-linenumber="18"></span>
+<span data-linenumber="19"></span></div><div class="code">FFMPEG = /home/mosquito/ffmpeg_build/include
+USGENV = ../UsageEnvironment/include
+GSENV = ../groupsock/include
+LMENV = ../liveMedia/include
+BSUSGENV = ../BasicUsageEnvironment/include
+PWD = .
+
+LMLIB = ../liveMedia/libliveMedia.a
+GSLIB = ../groupsock/libgroupsock.a
+BSUSGLIB = ../BasicUsageEnvironment/libBasicUsageEnvironment.a
+USGLIB = ../UsageEnvironment/libUsageEnvironment.a
+
+FFMPEG_STATIC_LIBS = /home/mosquito/ffmpeg_sources/ffmpeg/libavdevice/libavdevice.a         \   
+                     /home/mosquito/ffmpeg_sources/ffmpeg/libavformat/libavformat.a         \   
+                     /home/mosquito/ffmpeg_sources/ffmpeg/libavfilter/libavfilter.a         \   
+                     /home/mosquito/ffmpeg_sources/ffmpeg/libavcodec/libavcodec.a           \   
+                     /home/mosquito/ffmpeg_sources/ffmpeg/libswresample/libswresample.a     \   
+                     /home/mosquito/ffmpeg_sources/ffmpeg/libswscale/libswscale.a           \   
+                     /home/mosquito/ffmpeg_sources/ffmpeg/libavutil/libavutil.a             \
+</div></div></code></pre><h3 id="testmyrtspclientcpp"><a class="anchor hidden-xs" href="#testmyrtspclientcpp" title="testmyrtspclientcpp"><span class="octicon octicon-link"></span></a>testMyRTSPClient.cpp</h3><p>This part will briefly describe how my program work.</p><ul>
+<li>My program is modified from <code>live555/testProgs/testRTSPClient.cpp</code></li>
+<li>I combine live555, ffmpeg, and SDL into one program</li>
+</ul><ol>
+<li>
+<p>Using <code>testRTSPClient.cpp</code> code as a model, how can I decode the received video (and/or audio) data?</p>
+<ul>
+<li>The “testRTSPClient” application receives each (video and/or audio) frame into a memory buffer, but does not do anything with the frame data.</li>
+<li>The <code>DummySink</code> class that the “testRTSPClient” application uses and the (non-static) <code>DummySink::afterGettingFrame()</code> function. When this function is called, a complete <code>frame</code> (for H.264, this will be a <code>NAL unit</code>) will have already been delivered into <code>fReceiveBuffer</code>. Note that the <code>DummySink</code> implementation doesn’t actually do anything with this data; that’s why it’s called a ‘dummy’ sink.</li>
+<li>If we want to decode (or otherwise process) these frames, you would replace <code>DummySink</code> with your own <code>MediaSink</code> subclass. Its <code>afterGettingFrame()</code> function would pass the data (at <code>fReceiveBuffer</code>, of length <code>frameSize</code>) to a decoder. (A decoder would also use the <code>presentationTime</code> timestamp to properly time the rendering of each frame, and to synchronize audio and video.)</li>
+<li>After receiving H.264 video data, there is one more thing that we have to do before we start feeding frames to your decoder. H.264 streams have out-of-band configuration information (<code>SPS</code> and <code>PPS</code> NAL units) that we may need to feed to the decoder to initialize it. To get this information, call <code>MediaSubsession::fmtp_spropparametersets()</code> (on the video <code>subsession</code> object). This will give you an ASCII character string. You can then pass this to <code>parseSPropParameterSets()</code> (defined in the file <code>include/H264VideoRTPSource.hh</code>), to generate binary NAL units for your decoder.</li>
+</ul>
+</li>
+<li>
+<p>Now, you have the YUV420p files from h264 bitstream. Then feed the video/audio files to SDL <code>SDL_DisplayYUVOverlay()</code>, there are something details, please find them in my <code>testMyRTSPClient.cpp</code>.</p>
+</li>
+</ol><h2 id="part-3-nat-traversal"><a class="anchor hidden-xs" href="#part-3-nat-traversal" title="part-3-nat-traversal"><span class="octicon octicon-link"></span></a>Part 3: NAT Traversal</h2><h3 id="part-3-1"><a class="anchor hidden-xs" href="#part-3-1" title="part-3-1"><span class="octicon octicon-link"></span></a>Part 3-1</h3><p>In this part, we will find an NAT box, such as a WiFi access point, a Linux box with iptable, or a VM hypervisor. Then run my streaming server on the public IP domain (WAN port), and my streaming client on the private IP domain (LAN port). Use wireshark to capture the packets while we stream a short video. Analyze the captured packet traces and discuss:</p><ul>
+<li>
+<p>What are the protocols used to setup and carry out the streaming session?</p>
+<ul>
+<li>We can find that streaming server (WAN port) and streaming client (LAN port) communicate with each other using TCP protocol. They setup the streaming session at first, such as date, time, server IP address, client IP address, port, type of bitstream, version of streaming server and so on. After carrying out the setup session, the Read-Time Control Protocol (RTCP) provides out-of-band statistics and control information for the RTP (based on UDP) sessions.<br>
+<img src="/uploads/upload_b96e00cc866bab51748c0936180a8bbe.png" alt=""></li>
+</ul>
+</li>
+<li>
+<p>How does the UDP streaming server sends the packet through the NAT box? Observe the IP header of the UDP packets before and after passing through the NAT box.</p>
+<ul>
+<li>In the figure, we can find that 1) streaming sever address is 140.114.77.170 (WAN) and port is 8554, 2) streaming server address is 192.168.0.104 (LAN) and port is 62929 (for TCP), 65487 (for RTCP), and 65486 (for RTP). In streaming server side, I think it did the same thing whether client is WAN or LAN. In the client side, the WiFi access point using the port forwarding technique to transfer the packages (from streaming server) to streaming client. We know the WiFi access point IP address is 140.114.77.160. But in this figure, we are not able to know which port is used to do port forwarding.</li>
+</ul>
+</li>
+</ul><h3 id="part-3-2"><a class="anchor hidden-xs" href="#part-3-2" title="part-3-2"><span class="octicon octicon-link"></span></a>Part 3-2</h3><p>To find two NAT boxes, and put both the streaming server and client behind the NAT boxes (one behind each NAT box). Note that both sender and receiver now have private IP addresses.</p><ul>
+<li>
+<p>Use wireshark to analyze what happened, and propose solution to solve the problem. Hint: you may want to study the NAT traversal approaches, such as connection reversal, NAT hole punching, and NAT configuration protocols.</p>
+</li>
+<li>
+<p>Enhance your streaming server and client to enable UDP video streaming over two NAT boxes.</p>
+</li>
+</ul><p>Ideas:</p><ol>
+<li>UDP hole punching</li>
+<li>Third-party server with public IP address (WAN)</li>
+</ol><p>Due to streaming server and client are on the private IP domain (LAN port). Both of them cannot directly connect to each other. Network Address Translator (NAT), however, will maintain User Datagram Protocol (UDP) packet streams that traverse in the Internet. NAT will give an public IP (ex: 140.114.77.170) and port (ex: 9487) for streaming server (or streaming client).<br>
+Hence, we have to build a third-party host server with a public IP, it is in charge of transiting network states from streaming server and client. These are used to establish UDP port states that may be used for direct communications between the streaming server and client.</p><ul>
+<li>
+<p>Third-party server with public IP address<br>
+I built it using python language, it is in charge of 1) receiving the requests from both streaming server and streaming client, 2) establish direct communications between streaming server and client, 3) redirecting the UDP datagram from streaming server to client or vice versa.<br>
+<img src="/uploads/upload_f264d04043c1afc8e76336653d3064d6.png" alt=""><br>
+In the above figure, streaming server IP address is <code>140.114.77.160</code> and port is <code>44652</code>. Streaming client IP address is <code>140.114.77.125</code> and port is <code>63590</code>. These IP address and ports were assigned by NAT layer.</p>
+</li>
+<li>
+<p>Streaming server (<code>140.114.77.169:44652</code>)<br>
+Here is the message captured in streaming server side.<br>
+<img src="/uploads/upload_93ebee1af738b6aea675b29dd22baa28.png" alt=""></p>
+</li>
+<li>
+<p>Streaming client (<code>140.114.77.126:63590</code>)<br>
+Here is the message captured in streaming client side.<br>
+<img src="/uploads/upload_703beca2db74a22a4d7964a8e1327b76.png" alt=""></p>
+</li>
+</ul><p>To get this to work when both end-points are behind NATs or firewalls would require that both end-points send packets to each other at about the same time. This means that both sides need to know each others public IP addresses and port numbers and need to communicate this to each-other by some other means. There is no way for a program to directly determine its own public IP address if it is behind an NAT (it will only see its private address, such as <code>192.168.x.x</code>). Hence, I built a third-party server to handle this.</p><p>In the below figure, we can find that both end-points are behind NAT. They communicate with each other. The IP address in the packet was modified by NAT layer, which make both end-points be able to talk with each others.<br>
+<img src="/uploads/upload_810b9a6d25488caa6894c41600149cf7.png" alt=""></p></div>
+    <div class="ui-toc dropup unselectable hidden-print" style="display:none;">
+        <div class="pull-right dropdown">
+            <a id="tocLabel" class="ui-toc-label btn btn-default" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" title="Table of content">
+                <i class="fa fa-bars"></i>
+            </a>
+            <ul id="ui-toc" class="ui-toc-dropdown dropdown-menu" aria-labelledby="tocLabel">
+                <div class="toc"><ul class="nav"><li class=""><a href="#rtp-streaming-and-nat-network-address-translation-traversal">RTP Streaming and NAT (Network Address Translation) Traversal</a><ul class="nav"><li class=""><a href="#part-1-wireshark-labs">Part 1: Wireshark Labs</a><ul class="nav"><li><a href="#tcp">TCP</a></li><li><a href="#nat">NAT</a></li><li><a href="#80211">802.11</a></li></ul></li><li><a href="#part-2-udp-streaming">Part 2: UDP Streaming</a><ul class="nav"><li><a href="#compile-ffmpeg">Compile FFmpeg</a></li><li><a href="#compile-live555">Compile Live555</a></li><li><a href="#compile-simple-directmedia-layer-sdl">Compile Simple DirectMedia Layer (SDL)</a></li><li><a href="#compile-the-modified-code-testmyrtspclientcpp-which-is-written-by-myself">Compile the modified code, testMyRTSPClient.cpp, which is written by myself</a></li><li><a href="#optional-creating-static-library-and-linking-using-makefile">(Optional) Creating Static Library and linking using Makefile</a></li><li><a href="#testmyrtspclientcpp">testMyRTSPClient.cpp</a></li></ul></li><li class=""><a href="#part-3-nat-traversal">Part 3: NAT Traversal</a><ul class="nav"><li><a href="#part-3-1">Part 3-1</a></li><li class=""><a href="#part-3-2">Part 3-2</a></li></ul></li></ul></li></ul></div><div class="toc-menu"><a class="expand-toggle" href="#">Expand all</a><a class="back-to-top" href="#">Back to top</a><a class="go-to-bottom" href="#">Go to bottom</a></div>
+            </ul>
+        </div>
+    </div>
+    <div id="ui-toc-affix" class="ui-affix-toc ui-toc-dropdown unselectable hidden-print" data-spy="affix" style="top:17px;display:none;"  >
+        <div class="toc"><ul class="nav"><li class=""><a href="#rtp-streaming-and-nat-network-address-translation-traversal">RTP Streaming and NAT (Network Address Translation) Traversal</a><ul class="nav"><li class=""><a href="#part-1-wireshark-labs">Part 1: Wireshark Labs</a><ul class="nav"><li><a href="#tcp">TCP</a></li><li><a href="#nat">NAT</a></li><li><a href="#80211">802.11</a></li></ul></li><li><a href="#part-2-udp-streaming">Part 2: UDP Streaming</a><ul class="nav"><li><a href="#compile-ffmpeg">Compile FFmpeg</a></li><li><a href="#compile-live555">Compile Live555</a></li><li><a href="#compile-simple-directmedia-layer-sdl">Compile Simple DirectMedia Layer (SDL)</a></li><li><a href="#compile-the-modified-code-testmyrtspclientcpp-which-is-written-by-myself">Compile the modified code, testMyRTSPClient.cpp, which is written by myself</a></li><li><a href="#optional-creating-static-library-and-linking-using-makefile">(Optional) Creating Static Library and linking using Makefile</a></li><li><a href="#testmyrtspclientcpp">testMyRTSPClient.cpp</a></li></ul></li><li class=""><a href="#part-3-nat-traversal">Part 3: NAT Traversal</a><ul class="nav"><li><a href="#part-3-1">Part 3-1</a></li><li class=""><a href="#part-3-2">Part 3-2</a></li></ul></li></ul></li></ul></div><div class="toc-menu"><a class="expand-toggle" href="#">Expand all</a><a class="back-to-top" href="#">Back to top</a><a class="go-to-bottom" href="#">Go to bottom</a></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gist-embed/2.6.0/gist-embed.min.js" integrity="sha256-KyF2D6xPIJUW5sUDSs93vWyZm+1RzIpKCexxElmxl8g=" crossorigin="anonymous" defer></script>
+    <script>
+        var markdown = $(".markdown-body");
+        //smooth all hash trigger scrolling
+        function smoothHashScroll() {
+            var hashElements = $("a[href^='#']").toArray();
+            for (var i = 0; i < hashElements.length; i++) {
+                var element = hashElements[i];
+                var $element = $(element);
+                var hash = element.hash;
+                if (hash) {
+                    $element.on('click', function (e) {
+                        // store hash
+                        var hash = this.hash;
+                        if ($(hash).length <= 0) return;
+                        // prevent default anchor click behavior
+                        e.preventDefault();
+                        // animate
+                        $('body, html').stop(true, true).animate({
+                            scrollTop: $(hash).offset().top
+                        }, 100, "linear", function () {
+                            // when done, add hash to url
+                            // (default click behaviour)
+                            window.location.hash = hash;
+                        });
+                    });
+                }
+            }
+        }
+
+        smoothHashScroll();
+        var toc = $('.ui-toc');
+        var tocAffix = $('.ui-affix-toc');
+        var tocDropdown = $('.ui-toc-dropdown');
+        //toc
+        tocDropdown.click(function (e) {
+            e.stopPropagation();
+        });
+
+        var enoughForAffixToc = true;
+
+        function generateScrollspy() {
+            $(document.body).scrollspy({
+                target: ''
+            });
+            $(document.body).scrollspy('refresh');
+            if (enoughForAffixToc) {
+                toc.hide();
+                tocAffix.show();
+            } else {
+                tocAffix.hide();
+                toc.show();
+            }
+            $(document.body).scroll();
+        }
+
+        function windowResize() {
+            //toc right
+            var paddingRight = parseFloat(markdown.css('padding-right'));
+            var right = ($(window).width() - (markdown.offset().left + markdown.outerWidth() - paddingRight));
+            toc.css('right', right + 'px');
+            //affix toc left
+            var newbool;
+            var rightMargin = (markdown.parent().outerWidth() - markdown.outerWidth()) / 2;
+            //for ipad or wider device
+            if (rightMargin >= 133) {
+                newbool = true;
+                var affixLeftMargin = (tocAffix.outerWidth() - tocAffix.width()) / 2;
+                var left = markdown.offset().left + markdown.outerWidth() - affixLeftMargin;
+                tocAffix.css('left', left + 'px');
+            } else {
+                newbool = false;
+            }
+            if (newbool != enoughForAffixToc) {
+                enoughForAffixToc = newbool;
+                generateScrollspy();
+            }
+        }
+        $(window).resize(function () {
+            windowResize();
+        });
+        $(document).ready(function () {
+            windowResize();
+            generateScrollspy();
+        });
+
+        //remove hash
+        function removeHash() {
+            window.location.hash = '';
+        }
+
+        var backtotop = $('.back-to-top');
+        var gotobottom = $('.go-to-bottom');
+
+        backtotop.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (scrollToTop)
+                scrollToTop();
+            removeHash();
+        });
+        gotobottom.click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (scrollToBottom)
+                scrollToBottom();
+            removeHash();
+        });
+
+        function scrollToTop() {
+            $('body, html').stop(true, true).animate({
+                scrollTop: 0
+            }, 100, "linear");
+        }
+
+        function scrollToBottom() {
+            $('body, html').stop(true, true).animate({
+                scrollTop: $(document.body)[0].scrollHeight
+            }, 100, "linear");
+        }
+    </script>
+</body>
+
+</html>
